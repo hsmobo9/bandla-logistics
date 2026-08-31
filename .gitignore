@@ -1,0 +1,12 @@
+# Dependencies
+node_modules/
+client/node_modules/
+
+# Local database & temp files
+.system_generated/
+*.log
+*.zip
+
+# OS files
+.DS_Store
+Thumbs.db
