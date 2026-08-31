@@ -1,17 +1,1463 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bandla Logistics | Cloud Management Portal</title>
-    <link rel="icon" type="image/jpeg" href="./logo.jpg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="./assets/index-D1egKh3W.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-DY3TZ3ZF.css">
-  </head>
-  <body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-sky-500 selection:text-white min-h-screen">
-    <div id="root"></div>
-  </body>
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bandla Logistics - Cloud Portal v2.0</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#075985',
+              900: '#0c4a6e',
+              950: '#082f49'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- PapaParse for Real CSV Parsing & Uploads -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+  <!-- SheetJS for Real Excel (.xlsx, .xls) Parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #090d16; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
+  </style>
+</head>
+<body class="bg-[#070b14] text-slate-100 min-h-screen antialiased flex overflow-hidden">
+
+  <!-- ========================================================================= -->
+  <!-- LEFT ENTERPRISE SIDEBAR                                                  -->
+  <!-- ========================================================================= -->
+  <aside class="w-64 bg-[#0a0f1d] border-r border-slate-800/80 flex flex-col justify-between shrink-0 h-screen z-30">
+    <div>
+      <!-- Company Brand Header -->
+      <div class="p-4 border-b border-slate-800/80 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20 text-white font-black text-lg tracking-wider">
+            <i data-lucide="truck" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h1 class="text-xs font-black tracking-wider text-white uppercase flex items-center gap-1.5">
+              BANDLA LOGISTICS
+            </h1>
+            <p class="text-[10px] text-blue-400 font-semibold">Cloud Portal v2.0</p>
+          </div>
+        </div>
+        <button class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800/60 transition cursor-pointer">
+          <i data-lucide="sun" class="w-4 h-4 text-amber-400"></i>
+        </button>
+      </div>
+
+      <!-- Navigation Menu -->
+      <nav class="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-140px)] text-xs font-semibold">
+        
+        <button onclick="nav('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 transition cursor-pointer">
+          <i data-lucide="layout-grid" class="w-4 h-4"></i>
+          <span>Executive Dashboard</span>
+        </button>
+
+        <button onclick="nav('reconciliation')" id="nav-reconciliation" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-600/20 font-bold transition cursor-pointer">
+          <i data-lucide="receipt" class="w-4 h-4"></i>
+          <span>Daily Route Logs & Ingestion</span>
+        </button>
+
+        <button onclick="nav('invoices')" id="nav-invoices" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 transition cursor-pointer">
+          <i data-lucide="file-check" class="w-4 h-4"></i>
+          <span>Payroll & Invoicing</span>
+        </button>
+
+        <button onclick="nav('charges')" id="nav-charges" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 transition cursor-pointer">
+          <i data-lucide="credit-card" class="w-4 h-4"></i>
+          <span>Charges & Deductions</span>
+        </button>
+
+        <button onclick="nav('calendar')" id="nav-calendar" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 transition cursor-pointer">
+          <i data-lucide="calendar" class="w-4 h-4"></i>
+          <span>Weekly Route Planner</span>
+        </button>
+
+        <button onclick="nav('fleet')" id="nav-fleet" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 transition cursor-pointer">
+          <i data-lucide="car" class="w-4 h-4"></i>
+          <span>Fleet & Compliance</span>
+        </button>
+
+        <button onclick="nav('drivers')" id="nav-drivers" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 transition cursor-pointer">
+          <i data-lucide="users" class="w-4 h-4"></i>
+          <span>Driver & Holiday Register</span>
+        </button>
+
+        <button onclick="nav('rates')" id="nav-rates" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 transition cursor-pointer">
+          <i data-lucide="navigation" class="w-4 h-4"></i>
+          <span>Route Rates Card</span>
+        </button>
+
+        <button onclick="nav('audit')" id="nav-audit" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 transition cursor-pointer">
+          <i data-lucide="shield-check" class="w-4 h-4"></i>
+          <span>Financial Audit Trails</span>
+        </button>
+
+      </nav>
+    </div>
+
+    <!-- User Profile Bottom Bar -->
+    <div class="p-3 border-t border-slate-800/80 bg-[#060913]">
+      <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900/60 border border-slate-800/60">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-xs text-white uppercase shadow-sm">
+            HO
+          </div>
+          <div>
+            <p class="text-xs font-bold text-white truncate max-w-[110px]">Head Office Admin</p>
+            <p class="text-[10px] text-emerald-400 font-medium">Administrator</p>
+          </div>
+        </div>
+        <button onclick="resetDataToDefault()" class="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800 transition cursor-pointer" title="Reset to Master Data">
+          <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========================================================================= -->
+  <!-- MAIN WORKSPACE CONTENT AREA                                              -->
+  <!-- ========================================================================= -->
+  <div class="flex-1 flex flex-col h-screen overflow-y-auto bg-[#070b14]">
+    
+    <!-- Top Global App Bar -->
+    <header class="bg-[#0a0f1d]/90 backdrop-blur sticky top-0 z-20 border-b border-slate-800/80 px-6 py-3 flex items-center justify-between gap-4">
+      <div class="relative flex-1 max-w-md">
+        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5"></i>
+        <input type="text" id="global-search" oninput="handleGlobalSearch()" placeholder="Search driver, route, FD number, reg, or depot..." class="w-full bg-[#060913] border border-slate-800 rounded-xl pl-10 pr-4 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition shadow-inner">
+      </div>
+
+      <div class="flex items-center gap-3">
+        <select id="global-period-select" onchange="handlePeriodChange()" class="bg-[#060913] border border-slate-800 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-300 focus:outline-none focus:border-blue-500 cursor-pointer">
+          <option value="August 2026">August 2026</option>
+          <option value="July 2026">July 2026</option>
+          <option value="June 2026">June 2026</option>
+          <option value="all">All Periods (Q3)</option>
+        </select>
+
+        <div class="h-5 w-px bg-slate-800"></div>
+
+        <button onclick="openIngestModal()" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-600/20 flex items-center gap-1.5 transition cursor-pointer">
+          <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+          <span>Ingest Portal CSV</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Notification Toast Banner -->
+    <div id="toast-banner" class="hidden fixed bottom-6 right-6 z-50 bg-[#0d1424] border border-slate-700 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
+      <div id="toast-icon" class="p-1.5 bg-emerald-500/20 text-emerald-400 rounded-lg"><i data-lucide="check" class="w-4 h-4"></i></div>
+      <div>
+        <h4 id="toast-title" class="text-xs font-bold text-white">Action Completed</h4>
+        <p id="toast-msg" class="text-[11px] text-slate-400">Operation succeeded</p>
+      </div>
+    </div>
+
+    <!-- Workspace Viewports -->
+    <main class="p-6 max-w-7xl w-full mx-auto space-y-6">
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 1: CSV RECONCILIATION HUB (REAL CSV UPLOADER + EXCEL LOGIC)      -->
+      <!-- ===================================================================== -->
+      <div id="page-reconciliation" class="space-y-6">
+        
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#0a0f1d] border border-slate-800 p-5 rounded-2xl shadow-xl">
+          <div class="flex items-center gap-3">
+            <div class="p-2.5 bg-blue-500/10 text-blue-400 rounded-xl">
+              <i data-lucide="receipt" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-extrabold text-white tracking-tight">Admin Payroll & Reconciliation Hub</h2>
+              <p class="text-xs text-slate-400">Automated CSV & Excel parser (Dynamic Base Pay, £100 Top-Up Guarantee & Excess Parcels)</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="openAddShiftModal()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl border border-slate-700 flex items-center gap-1.5 transition cursor-pointer">
+              <i data-lucide="plus" class="w-4 h-4"></i> Record Single Route
+            </button>
+            <button onclick="openIngestModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-600/20 flex items-center gap-2 transition cursor-pointer">
+              <i data-lucide="upload-cloud" class="w-4 h-4"></i> Ingest Portal CSV / Excel
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI Rollup Cards Strip -->
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          <div class="bg-[#0a0f1d] border border-slate-800 p-3.5 rounded-xl text-center shadow-sm">
+            <span class="block text-[10px] font-black uppercase tracking-wider text-slate-400">Days Worked</span>
+            <span id="kpi-days" class="text-xl font-black text-white font-mono mt-1 block">453</span>
+          </div>
+          <div class="bg-[#0a0f1d] border border-slate-800 p-3.5 rounded-xl text-center shadow-sm">
+            <span class="block text-[10px] font-black uppercase tracking-wider text-slate-400">Total Stops Disp</span>
+            <span id="kpi-disp" class="text-xl font-black text-white font-mono mt-1 block">59,795</span>
+          </div>
+          <div class="bg-[#0a0f1d] border border-slate-800 p-3.5 rounded-xl text-center shadow-sm">
+            <span class="block text-[10px] font-black uppercase tracking-wider text-slate-400">Paid Stops</span>
+            <span id="kpi-paid" class="text-xl font-black text-emerald-400 font-mono mt-1 block">£59,295.00</span>
+          </div>
+          <div class="bg-[#0a0f1d] border border-slate-800 p-3.5 rounded-xl text-center shadow-sm" title="Minimum £100 day guarantee for shifts with <100 paid stops">
+            <span class="block text-[10px] font-black uppercase tracking-wider text-slate-400">Top-Up (£)</span>
+            <span id="kpi-topup" class="text-xl font-black text-sky-400 font-mono mt-1 block">£0.00</span>
+          </div>
+          <div class="bg-[#0a0f1d] border border-slate-800 p-3.5 rounded-xl text-center shadow-sm">
+            <span class="block text-[10px] font-black uppercase tracking-wider text-slate-400">Missing Stop Data</span>
+            <span id="kpi-missing" class="text-xl font-black text-rose-400 font-mono mt-1 block">2</span>
+          </div>
+        </div>
+
+        <!-- Filter Strip & Quick Slicers -->
+        <div class="bg-[#0a0f1d] border border-slate-800 p-4 rounded-xl shadow-lg space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3 flex-1 min-w-[280px]">
+              <div class="relative flex-1">
+                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+                <input type="text" id="recon-search-box" oninput="renderReconTable()" placeholder="Search driver, route, FD number, reg, or depot..." class="w-full bg-[#060913] border border-slate-800 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+              </div>
+
+              <select id="recon-driver-filter" onchange="renderReconTable()" class="bg-[#060913] border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-blue-500 cursor-pointer">
+                <option value="">All Drivers</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Slicers -->
+          <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-800 text-xs font-bold">
+            <span class="text-slate-500 text-[11px] px-1">Quick Filter:</span>
+            <button onclick="setReconFilter('ALL')" id="rf-ALL" class="px-3 py-1 rounded-lg bg-blue-600 text-white shadow-sm cursor-pointer">All Routes</button>
+            <button onclick="setReconFilter('FAILS')" id="rf-FAILS" class="px-3 py-1 rounded-lg text-slate-400 hover:text-white flex items-center gap-1.5 cursor-pointer">
+              <span>⚠️ Failed Stops (>0%)</span>
+              <span id="badge-fails" class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-800 text-amber-300 font-mono">128</span>
+            </button>
+            <button onclick="setReconFilter('TOPUP')" id="rf-TOPUP" class="px-3 py-1 rounded-lg text-slate-400 hover:text-white flex items-center gap-1.5 cursor-pointer">
+              <span>💰 Top-Up Guarantee (<100 Stops)</span>
+              <span id="badge-topup" class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-800 text-sky-300 font-mono">4</span>
+            </button>
+            <button onclick="setReconFilter('MISSING')" id="rf-MISSING" class="px-3 py-1 rounded-lg text-slate-400 hover:text-white flex items-center gap-1.5 cursor-pointer">
+              <span>🚨 Missing Portal Data</span>
+              <span id="badge-missing" class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-800 text-rose-300 font-mono">2</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Reconciliation Table -->
+        <div class="bg-[#0a0f1d] border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-[#060913] text-slate-300 font-black text-[11px] uppercase tracking-wider border-b border-slate-800">
+                <tr>
+                  <th class="p-3 border-r border-slate-800">Date</th>
+                  <th class="p-3 border-r border-slate-800">Driver Name</th>
+                  <th class="p-3 border-r border-slate-800">Depot</th>
+                  <th class="p-3 border-r border-slate-800">Reg</th>
+                  <th class="p-3 border-r border-slate-800">FD</th>
+                  <th class="p-3 border-r border-slate-800">Route</th>
+                  <th class="p-3 text-right border-r border-slate-800">Stops</th>
+                  <th class="p-3 text-right border-r border-slate-800 bg-slate-900/80">Paid Stops</th>
+                  <th class="p-3 text-center border-r border-slate-800" title="(Dispatched - Paid) / Dispatched">Fail (%)</th>
+                  <th class="p-3 text-right border-r border-slate-800" title="£100 minimum guarantee if paid stops < 100">Top-Up (£)</th>
+                  <th class="p-3 text-center border-r border-slate-800 bg-rose-500/10 text-rose-400">Top-Up Cancellation</th>
+                  <th class="p-3 text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="recon-tbody" class="divide-y divide-slate-800/80 bg-[#0a0f1d]">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 2: PAYROLL & INVOICING (STATE MACHINE)                           -->
+      <!-- ===================================================================== -->
+      <div id="page-invoices" class="hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#0a0f1d] border border-slate-800 p-5 rounded-2xl shadow-xl">
+          <div class="flex items-center gap-3">
+            <div class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl">
+              <i data-lucide="file-check" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-extrabold text-white tracking-tight">Contractor Self-Billing Invoices (State Machine)</h2>
+              <p class="text-xs text-slate-400">Audit-locked lifecycle: <strong>Draft ➔ Checked ➔ Approved ➔ Locked 🔒</strong> with WhatsApp statements</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-[#0a0f1d] border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-[#060913] text-slate-300 font-black text-[11px] uppercase tracking-wider border-b border-slate-800">
+                <tr>
+                  <th class="p-3.5">Invoice #</th>
+                  <th class="p-3.5">Driver / Courier</th>
+                  <th class="p-3.5">Billing Month</th>
+                  <th class="p-3.5 text-right">Routes / Stops</th>
+                  <th class="p-3.5 text-right">Gross Total</th>
+                  <th class="p-3.5 text-right text-rose-400">Deductions</th>
+                  <th class="p-3.5 text-right text-sky-400">VAT (20%)</th>
+                  <th class="p-3.5 text-right text-emerald-400 font-bold">Net Payable</th>
+                  <th class="p-3.5 text-center">Lifecycle State</th>
+                  <th class="p-3.5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="invoices-tbody" class="divide-y divide-slate-800/80 bg-[#0a0f1d]">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 3: CHARGES & DEDUCTIONS (FULL CRUD + AUDIT LOCK)                 -->
+      <!-- ===================================================================== -->
+      <div id="page-charges" class="hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#0a0f1d] border border-slate-800 p-5 rounded-2xl shadow-xl">
+          <div class="flex items-center gap-3">
+            <div class="p-2.5 bg-rose-500/10 text-rose-400 rounded-xl">
+              <i data-lucide="credit-card" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-extrabold text-white tracking-tight">Charges, Deductions & Manual Credits</h2>
+              <p class="text-xs text-slate-400">Manage van rentals (£135.00/wk), maintenance debits, and reimbursement credits with audit lock tracking</p>
+            </div>
+          </div>
+
+          <button onclick="openChargeModal()" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-rose-600/20 flex items-center gap-2 transition cursor-pointer">
+            <i data-lucide="plus" class="w-4 h-4"></i> Add Deduction / Credit
+          </button>
+        </div>
+
+        <div class="bg-[#0a0f1d] border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-[#060913] text-slate-300 font-black text-[11px] uppercase tracking-wider border-b border-slate-800">
+                <tr>
+                  <th class="p-3.5">Date / Billing Period</th>
+                  <th class="p-3.5">Contractor Driver</th>
+                  <th class="p-3.5">Category</th>
+                  <th class="p-3.5">Notes & Description</th>
+                  <th class="p-3.5 text-right">Amount (£)</th>
+                  <th class="p-3.5 text-center">Invoice Lock Status</th>
+                  <th class="p-3.5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="charges-tbody" class="divide-y divide-slate-800/80 bg-[#0a0f1d]">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 4: FLEET ASSET INVENTORY (FULL CRUD)                            -->
+      <!-- ===================================================================== -->
+      <div id="page-fleet" class="hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#0a0f1d] border border-slate-800 p-5 rounded-2xl shadow-xl">
+          <div class="flex items-center gap-3">
+            <div class="p-2.5 bg-amber-500/10 text-amber-400 rounded-xl">
+              <i data-lucide="car" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-extrabold text-white tracking-tight">Fleet Asset Inventory & Telematics</h2>
+              <p class="text-xs text-slate-400">78 Total Delivery Vans with live interactive status selector and 1-click decommission recovery</p>
+            </div>
+          </div>
+
+          <button onclick="openAddVanModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-600/20 flex items-center gap-2 transition cursor-pointer">
+            <i data-lucide="plus" class="w-4 h-4"></i> Add Delivery Van
+          </button>
+        </div>
+
+        <!-- Scope Slicer Bar -->
+        <div class="bg-[#0a0f1d] border border-slate-800 p-4 rounded-xl shadow-lg flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-400">Fleet Scope:</span>
+            <button onclick="setFleetScope('ACTIVE')" id="fs-active" class="px-3 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white shadow-sm cursor-pointer">🚐 Active Fleet</button>
+            <button onclick="setFleetScope('DECOMMISSIONED')" id="fs-decom" class="px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white cursor-pointer">🛑 Decommissioned</button>
+            <button onclick="setFleetScope('ALL')" id="fs-all" class="px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white cursor-pointer">📋 All Fleet</button>
+          </div>
+
+          <button onclick="restoreAllFleet()" id="restore-fleet-btn" class="hidden px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 border border-emerald-500/40 rounded-lg text-xs font-bold flex items-center gap-1.5 transition cursor-pointer">
+            <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Restore All to Active Fleet
+          </button>
+        </div>
+
+        <div class="bg-[#0a0f1d] border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-[#060913] text-slate-300 font-black text-[11px] uppercase tracking-wider border-b border-slate-800">
+                <tr>
+                  <th class="p-3.5">Registration</th>
+                  <th class="p-3.5">Model / Make</th>
+                  <th class="p-3.5">FD Number</th>
+                  <th class="p-3.5">Depot</th>
+                  <th class="p-3.5">Assigned Courier</th>
+                  <th class="p-3.5">Status Selector</th>
+                  <th class="p-3.5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="fleet-tbody" class="divide-y divide-slate-800/80 bg-[#0a0f1d]">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 5: DRIVERS PERSONNEL REGISTER (FULL CRUD: ADD, EDIT, DELETE)     -->
+      <!-- ===================================================================== -->
+      <div id="page-drivers" class="hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#0a0f1d] border border-slate-800 p-5 rounded-2xl shadow-xl">
+          <div class="flex items-center gap-3">
+            <div class="p-2.5 bg-indigo-500/10 text-indigo-400 rounded-xl">
+              <i data-lucide="users" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-extrabold text-white tracking-tight">Driver Personnel & Compliance Register</h2>
+              <p class="text-xs text-slate-400">Workforce compliance, RTW visa matrix, missing document audits & holiday planner</p>
+            </div>
+          </div>
+
+          <button onclick="openAddDriverModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-600/20 flex items-center gap-2 transition cursor-pointer">
+            <i data-lucide="plus" class="w-4 h-4"></i> Add Driver
+          </button>
+        </div>
+
+        <div class="bg-[#0a0f1d] border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-[#060913] text-slate-300 font-black text-[11px] uppercase tracking-wider border-b border-slate-800">
+                <tr>
+                  <th class="p-3.5">Courier Name / Code</th>
+                  <th class="p-3.5">Default Depot</th>
+                  <th class="p-3.5">Assigned Vehicle</th>
+                  <th class="p-3.5">License & DVLA</th>
+                  <th class="p-3.5">Right to Work (RTW)</th>
+                  <th class="p-3.5 text-center">VAT (20%)</th>
+                  <th class="p-3.5 text-center">Active Status</th>
+                  <th class="p-3.5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="drivers-tbody" class="divide-y divide-slate-800/80 bg-[#0a0f1d]">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 6: EXECUTIVE DASHBOARD                                          -->
+      <!-- ===================================================================== -->
+      <div id="page-dashboard" class="hidden space-y-6">
+        <div class="bg-[#0a0f1d] border border-slate-800 p-5 rounded-2xl shadow-xl flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="p-2.5 bg-blue-500/10 text-blue-400 rounded-xl">
+              <i data-lucide="layout-grid" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-extrabold text-white tracking-tight">Executive Transport Overview</h2>
+              <p class="text-xs text-slate-400">Real-time KPI metrics across all 6 depots, couriers, and delivery assets</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-[#0a0f1d] border border-slate-800 p-4 rounded-2xl shadow-lg">
+            <span class="text-[11px] font-bold text-slate-400 uppercase">Active Delivery Fleet</span>
+            <p id="dash-fleet-count" class="text-2xl font-black text-white font-mono mt-1">71 <span class="text-xs font-normal text-slate-500">/ 78 Total</span></p>
+            <span class="text-[10px] text-emerald-400 mt-1 block font-medium">91.0% Availability Rate</span>
+          </div>
+          <div class="bg-[#0a0f1d] border border-slate-800 p-4 rounded-2xl shadow-lg">
+            <span class="text-[11px] font-bold text-slate-400 uppercase">Master Driver Roster</span>
+            <p id="dash-driver-count" class="text-2xl font-black text-sky-400 font-mono mt-1">101 <span class="text-xs font-normal text-slate-500">Couriers</span></p>
+            <span class="text-[10px] text-sky-400/80 mt-1 block font-medium">6 Depots Synchronized</span>
+          </div>
+          <div class="bg-[#0a0f1d] border border-slate-800 p-4 rounded-2xl shadow-lg">
+            <span class="text-[11px] font-bold text-slate-400 uppercase">August Route Volume</span>
+            <p id="dash-stop-count" class="text-2xl font-black text-emerald-400 font-mono mt-1">59,795 <span class="text-xs font-normal text-slate-500">Stops</span></p>
+            <span class="text-[10px] text-emerald-400 mt-1 block font-medium">£59,295 Base Stop Pay</span>
+          </div>
+          <div class="bg-[#0a0f1d] border border-slate-800 p-4 rounded-2xl shadow-lg">
+            <span class="text-[11px] font-bold text-slate-400 uppercase">Monthly Payroll Total</span>
+            <p class="text-2xl font-black text-indigo-400 font-mono mt-1">£48,290.00</p>
+            <span class="text-[10px] text-indigo-400/80 mt-1 block font-medium">54 Invoices Reconciled</span>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODALS: REAL CSV UPLOADER & FULL CRUD DIALOGS                             -->
+  <!-- ========================================================================= -->
+
+  <!-- Modal 1: Real Ingest CSV / Excel File -->
+  <div id="modal-ingest" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0a0f1d] border border-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i data-lucide="upload-cloud" class="w-5 h-5 text-blue-400"></i> Ingest Delivery Portal CSV / Excel
+        </h3>
+        <button onclick="closeIngestModal()" class="p-1.5 text-slate-400 hover:text-white rounded-lg bg-slate-800 cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <p class="text-xs text-slate-400">Select any <strong>.csv</strong> or <strong>.xlsx</strong> file from your computer. The engine will parse and reconcile stop pay, fail rates, and £100 top-ups in real time.</p>
+      
+      <div onclick="document.getElementById('csv-file-input').click()" class="p-6 bg-[#060913] border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-2xl text-center space-y-3 cursor-pointer transition">
+        <i data-lucide="file-spreadsheet" class="w-10 h-10 text-blue-400 mx-auto"></i>
+        <div>
+          <span class="text-xs font-bold text-white block" id="upload-status-label">Click to Browse or Drag & Drop File</span>
+          <span class="text-[11px] text-slate-500">Supports .CSV, .XLSX, .XLS files</span>
+        </div>
+        <input type="file" id="csv-file-input" accept=".csv, .xlsx, .xls" class="hidden" onchange="handleFileUpload(event)">
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeIngestModal()" class="px-4 py-2 bg-slate-800 text-slate-400 text-xs font-bold rounded-xl cursor-pointer">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Add / Edit Driver -->
+  <div id="modal-driver" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0a0f1d] border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 id="driver-modal-title" class="text-base font-bold text-white">Add New Courier Driver</h3>
+        <button onclick="closeDriverModal()" class="p-1.5 text-slate-400 hover:text-white rounded-lg bg-slate-800 cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form onsubmit="saveDriver(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="driver-edit-id">
+        <div>
+          <label class="block text-slate-400 font-medium mb-1">Full Name *</label>
+          <input type="text" id="driver-name-input" required class="w-full bg-[#060913] border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-blue-500">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-400 font-medium mb-1">Driver Code / ID</label>
+            <input type="text" id="driver-code-input" placeholder="e.g. HIN-05" class="w-full bg-[#060913] border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-slate-400 font-medium mb-1">Default Depot</label>
+            <select id="driver-depot-input" class="w-full bg-[#060913] border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-blue-500">
+              <option value="Leicester">Leicester</option>
+              <option value="Hinckley">Hinckley</option>
+              <option value="Lincoln">Lincoln</option>
+              <option value="Nottingham">Nottingham</option>
+              <option value="Peterborough">Peterborough</option>
+              <option value="Raunds">Raunds</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-400 font-medium mb-1">Assigned Vehicle Reg</label>
+            <input type="text" id="driver-reg-input" placeholder="e.g. A021 OWA" class="w-full bg-[#060913] border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-slate-400 font-medium mb-1">Right to Work (RTW)</label>
+            <select id="driver-rtw-input" class="w-full bg-[#060913] border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-blue-500">
+              <option value="British Citizen">British Citizen</option>
+              <option value="Settled Status">Settled Status</option>
+              <option value="Student Visa">Student Visa (20h)</option>
+              <option value="Skilled Worker">Skilled Worker</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 pt-1">
+          <input type="checkbox" id="driver-vat-input" class="rounded bg-slate-900 border-slate-700 text-blue-600 focus:ring-0">
+          <label for="driver-vat-input" class="text-slate-300 font-medium">VAT Registered (Apply 20% on Invoices)</label>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeDriverModal()" class="px-4 py-2 bg-slate-800 text-slate-400 rounded-xl cursor-pointer">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg transition cursor-pointer">Save Driver</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 3: Add / Edit Deduction Charge -->
+  <div id="modal-charge" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0a0f1d] border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 id="charge-modal-title" class="text-base font-bold text-white">Add Deduction / Management Credit</h3>
+        <button onclick="closeChargeModal()" class="p-1.5 text-slate-400 hover:text-white rounded-lg bg-slate-800 cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form onsubmit="saveCharge(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="charge-edit-id">
+        <div>
+          <label class="block text-slate-400 font-medium mb-1">Contractor Driver *</label>
+          <select id="charge-driver-input" required class="w-full bg-[#060913] border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-blue-500">
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-400 font-medium mb-1">Category</label>
+            <select id="charge-type-input" class="w-full bg-[#060913] border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-blue-500">
+              <option value="Van Hire">Van Hire (£135/wk)</option>
+              <option value="Vehicle Damage">Vehicle Damage</option>
+              <option value="Fuel Surcharge">Fuel Surcharge</option>
+              <option value="Goods in Transit Insurance">Goods in Transit Insurance</option>
+              <option value="Management Credit">Management Credit (+)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-400 font-medium mb-1">Amount (£) *</label>
+            <input type="number" step="0.01" id="charge-amount-input" required placeholder="e.g. 135.00" class="w-full bg-[#060913] border border-slate-800 rounded-lg p-2 text-white font-mono focus:outline-none focus:border-blue-500">
+          </div>
+        </div>
+        <div>
+          <label class="block text-slate-400 font-medium mb-1">Notes & Reference</label>
+          <input type="text" id="charge-notes-input" placeholder="e.g. Weekly Van Hire (Week 34)" class="w-full bg-[#060913] border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-blue-500">
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeChargeModal()" class="px-4 py-2 bg-slate-800 text-slate-400 rounded-xl cursor-pointer">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl shadow-lg transition cursor-pointer">Save Deduction</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 4: Record Single Route Shift -->
+  <div id="modal-shift" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0a0f1d] border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-white">Record Daily Route Shift</h3>
+        <button onclick="closeShiftModal()" class="p-1.5 text-slate-400 hover:text-white rounded-lg bg-slate-800 cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form onsubmit="saveShift(event)" class="space-y-3 text-xs">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-400 font-medium mb-1">Shift Date *</label>
+            <input type="date" id="shift-date-input" required class="w-full bg-[#060913] border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-slate-400 font-medium mb-1">Driver *</label>
+            <select id="shift-driver-input" required class="w-full bg-[#060913] border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-blue-500"></select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-slate-400 font-medium mb-1">Route Code</label>
+            <input type="text" id="shift-route-input" placeholder="HIN-01" required class="w-full bg-[#060913] border border-slate-800 rounded-lg p-2 text-white font-mono focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-slate-400 font-medium mb-1">FD Number</label>
+            <input type="text" id="shift-fd-input" placeholder="FD74064" class="w-full bg-[#060913] border border-slate-800 rounded-lg p-2 text-white font-mono focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-slate-400 font-medium mb-1">Depot</label>
+            <select id="shift-depot-input" class="w-full bg-[#060913] border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-blue-500">
+              <option value="Leicester">Leicester</option>
+              <option value="Hinckley">Hinckley</option>
+              <option value="Lincoln">Lincoln</option>
+              <option value="Nottingham">Nottingham</option>
+              <option value="Peterborough">Peterborough</option>
+              <option value="Raunds">Raunds</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-400 font-medium mb-1">Dispatched Stops *</label>
+            <input type="number" id="shift-disp-input" required placeholder="120" class="w-full bg-[#060913] border border-slate-800 rounded-lg p-2 text-white font-mono focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-slate-400 font-medium mb-1">Paid Stops *</label>
+            <input type="number" id="shift-paid-input" required placeholder="120" class="w-full bg-[#060913] border border-slate-800 rounded-lg p-2 text-white font-mono focus:outline-none focus:border-blue-500">
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeShiftModal()" class="px-4 py-2 bg-slate-800 text-slate-400 rounded-xl cursor-pointer">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg transition cursor-pointer">Add Route</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const DEFAULT_DRIVERS = [
+      { id: 'd1', name: 'Akashdeep Singh Bhaliwal', code: 'LEI-101', depot: 'Leicester', reg: 'DS74 COA', rtw: 'British Citizen', vat: false, active: true },
+      { id: 'd2', name: 'Amandeep Singh', code: 'HIN-01', depot: 'Hinckley', reg: 'A021 OWA', rtw: 'British Citizen', vat: true, active: true },
+      { id: 'd3', name: 'Amandeep Singh Patiyala', code: 'LEI-01', depot: 'Leicester', reg: 'BD21 WLU', rtw: 'Settled Status', vat: false, active: true },
+      { id: 'd4', name: 'Amanpreet Singh', code: 'LIN-01', depot: 'Lincoln', reg: 'BJ20 NNK', rtw: 'British Citizen', vat: false, active: true },
+      { id: 'd5', name: 'Andrie Ploscaru', code: 'NOT-01', depot: 'Nottingham', reg: 'BL21 USB', rtw: 'Settled Status', vat: true, active: true },
+      { id: 'd6', name: 'Ankit Chaudhary', code: 'PET-01', depot: 'Peterborough', reg: 'BN70 PXW', rtw: 'British Citizen', vat: false, active: true },
+      { id: 'd7', name: 'Arshpreet Singh', code: 'RAU-01', depot: 'Raunds', reg: 'BT21 EUA', rtw: 'British Citizen', vat: false, active: true },
+      { id: 'd8', name: 'Ashutosh Rana', code: 'HIN-02', depot: 'Hinckley', reg: 'BT74 AMO', rtw: 'Student Visa (20h)', vat: false, active: true },
+      { id: 'd9', name: 'Baljinder Singh', code: 'LEI-02', depot: 'Leicester', reg: 'BV20 YHN', rtw: 'British Citizen', vat: true, active: true },
+      { id: 'd10', name: 'Basanta Adhikari', code: 'LIN-02', depot: 'Lincoln', reg: 'BX70 OPL', rtw: 'British Citizen', vat: false, active: true }
+    ];
+
+    const DEFAULT_SHIFTS = [
+      { id: 's1', date: '2026-08-30', driver: 'Akashdeep Singh Bhaliwal', code: 'LEI-101', depot: 'Leicester', reg: 'DS74 COA', fd: 'FD74064', route: 'LEI-101', disp: 0, paid: 0, fail: null, topUp: 0, cancelled: false, portalMissing: true },
+      { id: 's2', date: '2026-08-29', driver: 'Amandeep Singh', code: 'HIN-01', depot: 'Hinckley', reg: 'A021 OWA', fd: 'FD74064', route: 'HIN-01', disp: 152, paid: 152, fail: 0, topUp: 0, cancelled: false, portalMissing: false },
+      { id: 's3', date: '2026-08-29', driver: 'Amandeep Singh Patiyala', code: 'LEI-01', depot: 'Leicester', reg: 'BD21 WLU', fd: 'FD74064', route: 'LEI-01', disp: 114, paid: 114, fail: 0, topUp: 0, cancelled: false, portalMissing: false },
+      { id: 's4', date: '2026-08-29', driver: 'Amanpreet Singh', code: 'LIN-01', depot: 'Lincoln', reg: 'BJ20 NNK', fd: 'FD74064', route: 'LIN-01', disp: 121, paid: 121, fail: 0, topUp: 0, cancelled: false, portalMissing: false },
+      { id: 's5', date: '2026-08-29', driver: 'Andrie Ploscaru', code: 'NOT-01', depot: 'Nottingham', reg: 'BL21 USB', fd: 'FD74064', route: 'NOT-01', disp: 128, paid: 128, fail: 0, topUp: 0, cancelled: false, portalMissing: false },
+      { id: 's6', date: '2026-08-28', driver: 'Amandeep Singh', code: 'HIN-01', depot: 'Hinckley', reg: 'A021 OWA', fd: 'FD74064', route: 'HIN-01', disp: 149, paid: 144, fail: 3.36, topUp: 0, cancelled: false, portalMissing: false },
+      { id: 's7', date: '2026-08-28', driver: 'Amandeep Singh Patiyala', code: 'LEI-01', depot: 'Leicester', reg: 'BD21 WLU', fd: 'FD74064', route: 'LEI-01', disp: 111, paid: 106, fail: 4.50, topUp: 0, cancelled: false, portalMissing: false },
+      { id: 's8', date: '2026-08-27', driver: 'Baljinder Singh', code: 'LEI-02', depot: 'Leicester', reg: 'BV20 YHN', fd: 'FD74064', route: 'LEI-02', disp: 80, paid: 75, fail: 6.25, topUp: 25.00, cancelled: false, portalMissing: false },
+      { id: 's9', date: '2026-08-27', driver: 'Basanta Adhikari', code: 'LIN-02', depot: 'Lincoln', reg: 'BX70 OPL', fd: 'FD74064', route: 'LIN-02', disp: 70, paid: 70, fail: 0, topUp: 30.00, cancelled: true, portalMissing: false },
+      { id: 's10', date: '2026-08-26', driver: 'Arshpreet Singh', code: 'RAU-01', depot: 'Raunds', reg: 'BT21 EUA', fd: 'FD74064', route: 'RAU-01', disp: 0, paid: 0, fail: null, topUp: 0, cancelled: false, portalMissing: true }
+    ];
+
+    const DEFAULT_FLEET = [
+      { id: 'v1', reg: 'A021 OWA', model: 'Mercedes Sprinter L3H2', fd: 'FD74064', depot: 'Hinckley', driver: 'Amandeep Singh', status: 'Deployed on Route' },
+      { id: 'v2', reg: 'BD21 WLU', model: 'Ford Transit 350 Leader', fd: 'FD74064', depot: 'Leicester', driver: 'Amandeep Singh Patiyala', status: 'Available' },
+      { id: 'v3', reg: 'BJ20 NNK', model: 'Vauxhall Movano Dynamic', fd: 'FD74064', depot: 'Lincoln', driver: 'Amanpreet Singh', status: 'Available' },
+      { id: 'v4', reg: 'BL21 USB', model: 'Peugeot Boxer Professional', fd: 'FD74064', depot: 'Nottingham', driver: 'Andrie Ploscaru', status: 'Deployed on Route' },
+      { id: 'v5', reg: 'BN70 PXW', model: 'Mercedes Sprinter L3H2', fd: 'FD74064', depot: 'Peterborough', driver: 'Ankit Chaudhary', status: 'Under Maintenance' },
+      { id: 'v6', reg: 'BT21 EUA', model: 'Ford Transit 350 Leader', fd: 'FD74064', depot: 'Raunds', driver: 'Arshpreet Singh', status: 'Available' },
+      { id: 'v7', reg: 'DS74 COA', model: 'Ford Transit Custom', fd: 'FD74064', depot: 'Leicester', driver: 'Akashdeep Singh Bhaliwal', status: 'Decommissioned' }
+    ];
+
+    const DEFAULT_INVOICES = [
+      { id: 'inv-1', num: 'INV-2026-08-001', driver: 'Amandeep Singh', month: 'August 2026', days: 24, stops: 3420, gross: 3545.00, ded: 320.00, vat: 645.00, net: 3870.00, status: 'Locked' },
+      { id: 'inv-2', num: 'INV-2026-08-002', driver: 'Amandeep Singh Patiyala', month: 'August 2026', days: 22, stops: 2860, gross: 2950.00, ded: 280.00, vat: 0.00, net: 2670.00, status: 'Approved' },
+      { id: 'inv-3', num: 'INV-2026-08-003', driver: 'Amanpreet Singh', month: 'August 2026', days: 25, stops: 3120, gross: 3210.00, ded: 310.00, vat: 0.00, net: 2900.00, status: 'Checked' },
+      { id: 'inv-4', num: 'INV-2026-08-004', driver: 'Andrie Ploscaru', month: 'August 2026', days: 23, stops: 2990, gross: 3080.00, ded: 290.00, vat: 558.00, net: 3348.00, status: 'Draft' }
+    ];
+
+    const DEFAULT_CHARGES = [
+      { id: 'c1', date: '2026-08-30', driver: 'Andrie Ploscaru', code: 'DR1004', type: 'Van Hire', notes: 'Monthly Van Hire Rental Charge (4 Weeks)', amount: 540.00, locked: false, invNum: null },
+      { id: 'c2', date: '2026-08-01', driver: 'Amandeep Singh', code: 'DR1001', type: 'Management Credit', notes: 'Toll & Parcel Bag Reimbursement Credit', amount: -35.00, locked: true, invNum: 'INV-AUGUST-2026-DR1001' },
+      { id: 'c3', date: '2026-08-01', driver: 'Amandeep Singh', code: 'DR1001', type: 'Van Hire', notes: 'Monthly Van Hire Rental Charge (4 Weeks)', amount: 540.00, locked: true, invNum: 'INV-AUGUST-2026-DR1001' }
+    ];
+
+    // State with LocalStorage Persistence
+    let drivers = JSON.parse(localStorage.getItem('bandla_drivers')) || DEFAULT_DRIVERS;
+    let shifts = JSON.parse(localStorage.getItem('bandla_shifts')) || DEFAULT_SHIFTS;
+    let fleet = JSON.parse(localStorage.getItem('bandla_fleet')) || DEFAULT_FLEET;
+    let invoices = JSON.parse(localStorage.getItem('bandla_invoices')) || DEFAULT_INVOICES;
+    let charges = JSON.parse(localStorage.getItem('bandla_charges')) || DEFAULT_CHARGES;
+
+    function saveState() {
+      localStorage.setItem('bandla_drivers', JSON.stringify(drivers));
+      localStorage.setItem('bandla_shifts', JSON.stringify(shifts));
+      localStorage.setItem('bandla_fleet', JSON.stringify(fleet));
+      localStorage.setItem('bandla_invoices', JSON.stringify(invoices));
+      localStorage.setItem('bandla_charges', JSON.stringify(charges));
+      updateKpis();
+    }
+
+    function resetDataToDefault() {
+      if (confirm('Reset database to master dataset?')) {
+        localStorage.clear();
+        drivers = [...DEFAULT_DRIVERS];
+        shifts = [...DEFAULT_SHIFTS];
+        fleet = [...DEFAULT_FLEET];
+        invoices = [...DEFAULT_INVOICES];
+        charges = [...DEFAULT_CHARGES];
+        saveState();
+        init();
+        showToast('Database Reset', 'Master transport records restored');
+      }
+    }
+
+    let currentPage = 'reconciliation';
+    let reconFilter = 'ALL';
+    let fleetScope = 'ACTIVE';
+
+    function init() {
+      populateDriverDropdowns();
+      renderReconTable();
+      renderInvoicesTable();
+      renderChargesTable();
+      renderFleetTable();
+      renderDriversTable();
+      updateKpis();
+      lucide.createIcons();
+    }
+
+    function updateKpis() {
+      const days = shifts.length;
+      const disp = shifts.reduce((acc, s) => acc + (Number(s.disp) || 0), 0);
+      const paid = shifts.reduce((acc, s) => acc + (Number(s.paid) || 0), 0);
+      const topUp = shifts.reduce((acc, s) => acc + (!s.cancelled && s.topUp ? Number(s.topUp) : 0), 0);
+      const missing = shifts.filter(s => s.portalMissing).length;
+      const fails = shifts.filter(s => s.fail > 0).length;
+      const topUpCount = shifts.filter(s => s.topUp > 0).length;
+
+      document.getElementById('kpi-days').innerText = days;
+      document.getElementById('kpi-disp').innerText = disp.toLocaleString();
+      document.getElementById('kpi-paid').innerText = '£' + paid.toLocaleString() + '.00';
+      document.getElementById('kpi-topup').innerText = '£' + topUp.toFixed(2);
+      document.getElementById('kpi-missing').innerText = missing;
+      document.getElementById('badge-fails').innerText = fails;
+      document.getElementById('badge-topup').innerText = topUpCount;
+      document.getElementById('badge-missing').innerText = missing;
+
+      const activeVans = fleet.filter(v => v.status !== 'Decommissioned').length;
+      document.getElementById('dash-fleet-count').innerHTML = activeVans + ' <span class="text-xs font-normal text-slate-500">/ ' + fleet.length + ' Total</span>';
+      document.getElementById('dash-driver-count').innerHTML = drivers.length + ' <span class="text-xs font-normal text-slate-500">Couriers</span>';
+      document.getElementById('dash-stop-count').innerHTML = disp.toLocaleString() + ' <span class="text-xs font-normal text-slate-500">Stops</span>';
+    }
+
+    function nav(pageId) {
+      currentPage = pageId;
+      document.querySelectorAll('#page-reconciliation, #page-invoices, #page-charges, #page-fleet, #page-drivers, #page-dashboard').forEach(el => el.classList.add('hidden'));
+      const activeEl = document.getElementById('page-' + pageId);
+      if (activeEl) activeEl.classList.remove('hidden');
+
+      document.querySelectorAll('aside nav button').forEach(b => {
+        b.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 transition cursor-pointer";
+      });
+      const activeBtn = document.getElementById('nav-' + pageId);
+      if (activeBtn) {
+        activeBtn.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-600/20 font-bold transition cursor-pointer";
+      }
+      lucide.createIcons();
+    }
+
+    function populateDriverDropdowns() {
+      const reconSelect = document.getElementById('recon-driver-filter');
+      const chargeSelect = document.getElementById('charge-driver-input');
+      const shiftSelect = document.getElementById('shift-driver-input');
+
+      if (reconSelect) {
+        reconSelect.innerHTML = '<option value="">All Drivers (' + drivers.length + ' Registered)</option>';
+        drivers.forEach(d => { reconSelect.innerHTML += '<option value="' + d.name + '">' + d.name + ' (' + d.code + ')</option>'; });
+      }
+      if (chargeSelect) {
+        chargeSelect.innerHTML = '';
+        drivers.forEach(d => { chargeSelect.innerHTML += '<option value="' + d.name + '">' + d.name + ' (' + d.code + ')</option>'; });
+      }
+      if (shiftSelect) {
+        shiftSelect.innerHTML = '';
+        drivers.forEach(d => { shiftSelect.innerHTML += '<option value="' + d.name + '">' + d.name + ' (' + d.code + ')</option>'; });
+      }
+    }
+
+    function setReconFilter(f) {
+      reconFilter = f;
+      document.querySelectorAll('#rf-ALL, #rf-FAILS, #rf-TOPUP, #rf-MISSING').forEach(b => {
+        b.className = "px-3 py-1 rounded-lg text-slate-400 hover:text-white flex items-center gap-1.5 cursor-pointer";
+      });
+      const activeBtn = document.getElementById('rf-' + f);
+      if (activeBtn) activeBtn.className = "px-3 py-1 rounded-lg bg-blue-600 text-white shadow-sm flex items-center gap-1.5 font-bold cursor-pointer";
+      renderReconTable();
+    }
+
+    function renderReconTable() {
+      const q = (document.getElementById('recon-search-box')?.value || '').toLowerCase();
+      const drv = document.getElementById('recon-driver-filter')?.value || '';
+      const tbody = document.getElementById('recon-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      let filtered = shifts.filter(s => {
+        if (drv && s.driver !== drv) return false;
+        if (q && !s.driver.toLowerCase().includes(q) && !s.route.toLowerCase().includes(q) && !s.depot.toLowerCase().includes(q)) return false;
+        if (reconFilter === 'FAILS') return s.fail > 0;
+        if (reconFilter === 'TOPUP') return s.topUp > 0;
+        if (reconFilter === 'MISSING') return s.portalMissing;
+        return true;
+      });
+
+      filtered.forEach(s => {
+        const isUnpaid = s.portalMissing;
+        const rowBg = isUnpaid ? 'bg-rose-950/20 text-rose-300' : 'hover:bg-slate-800/40';
+
+        tbody.innerHTML += '<tr class="' + rowBg + ' transition font-medium">' +
+          '<td class="p-3 whitespace-nowrap font-mono text-slate-300 border-r border-slate-800/80">' + s.date + '</td>' +
+          '<td class="p-3 font-bold text-white border-r border-slate-800/80">' + s.driver + '</td>' +
+          '<td class="p-3 text-slate-300 border-r border-slate-800/80">' + s.depot + '</td>' +
+          '<td class="p-3 font-mono text-slate-300 border-r border-slate-800/80">' + s.reg + '</td>' +
+          '<td class="p-3 font-mono text-slate-300 border-r border-slate-800/80">' + s.fd + '</td>' +
+          '<td class="p-3 font-bold font-mono text-blue-400 border-r border-slate-800/80">' + s.route + '</td>' +
+          '<td class="p-3 text-right font-bold text-slate-200 border-r border-slate-800/80">' + s.disp + '</td>' +
+          '<td class="p-3 text-right font-black text-white border-r border-slate-800/80 bg-slate-950/40">' +
+            (isUnpaid ? '<span class="text-rose-400 font-bold">£0.00</span>' : '£' + Number(s.paid).toFixed(2)) +
+          '</td>' +
+          '<td class="p-3 text-center border-r border-slate-800/80">' +
+            (isUnpaid || s.fail === null ? '<span class="text-slate-500">-</span>' :
+              s.fail === 0 ? '<span class="px-2 py-0.5 rounded text-[11px] font-black bg-emerald-500/10 text-emerald-400">0%</span>' :
+              '<span class="px-2 py-0.5 rounded text-[11px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/30">' + s.fail + '%</span>'
+            ) +
+          '</td>' +
+          '<td class="p-3 text-right font-bold border-r border-slate-800/80">' +
+            (isUnpaid ? '<span class="text-slate-500">-</span>' :
+              s.cancelled ? '<span class="text-rose-400 line-through text-[11px]">£0.00</span>' :
+              s.topUp > 0 ? '<span class="text-sky-400 font-black">£' + s.topUp.toFixed(2) + '</span>' :
+              '<span class="text-slate-500">-</span>'
+            ) +
+          '</td>' +
+          '<td class="p-3 text-center border-r border-slate-800/80">' +
+            (isUnpaid ? '<span class="text-slate-500">-</span>' :
+              s.cancelled ? '<span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-rose-500/20 text-rose-400 border border-rose-500/30">Cancelled</span>' :
+              s.topUp > 0 ?
+                '<button onclick="toggleTopUp('' + s.id + '')" class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-rose-500/20 hover:text-rose-300 transition cursor-pointer" title="Click to cancel top-up subsidy">Active (Click to Cancel)</button>' :
+                '<span class="text-slate-500">-</span>'
+            ) +
+          '</td>' +
+          '<td class="p-3 text-center">' +
+            '<button onclick="deleteShift('' + s.id + '')" class="p-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 cursor-pointer" title="Delete Shift"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>' +
+          '</td>' +
+        '</tr>';
+      });
+      lucide.createIcons();
+    }
+
+    function toggleTopUp(shiftId) {
+      const s = shifts.find(item => item.id === shiftId);
+      if (s) {
+        s.cancelled = !s.cancelled;
+        saveState();
+        showToast('Top-Up Status Updated', 'Shift for ' + s.driver + ' is now ' + (s.cancelled ? 'Cancelled' : 'Active'));
+        renderReconTable();
+      }
+    }
+
+    function deleteShift(id) {
+      if (confirm('Delete this shift log?')) {
+        shifts = shifts.filter(s => s.id !== id);
+        saveState();
+        renderReconTable();
+        showToast('Shift Removed', 'Shift successfully deleted from database');
+      }
+    }
+
+    // =========================================================================
+    // REAL FILE UPLOAD PARSER (PapaParse for CSV, SheetJS for XLSX)
+    // =========================================================================
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      document.getElementById('upload-status-label').innerText = 'Parsing ' + file.name + '...';
+
+      const fileName = file.name.toLowerCase();
+      if (fileName.endsWith('.csv')) {
+        Papa.parse(file, {
+          header: true,
+          skipEmptyLines: true,
+          complete: function(results) {
+            processParsedRows(results.data, file.name);
+          },
+          error: function(err) {
+            alert('Error parsing CSV file: ' + err.message);
+          }
+        });
+      } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheet = workbook.SheetNames[0];
+          const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
+          processParsedRows(rows, file.name);
+        };
+        reader.readAsArrayBuffer(file);
+      }
+    }
+
+    function processParsedRows(rows, filename) {
+      let importedCount = 0;
+
+      rows.forEach((row, idx) => {
+        // Dynamic column matching for various portal export formats
+        const date = row['Date'] || row['date'] || row['Shift Date'] || '2026-08-30';
+        const driverName = row['Driver'] || row['driver'] || row['Driver Name'] || row['Courier'] || 'Unassigned Courier';
+        const depot = row['Depot'] || row['depot'] || row['Station'] || 'Leicester';
+        const reg = row['Registration'] || row['reg'] || row['Van Reg'] || 'TBD';
+        const fd = row['FD'] || row['fd'] || row['FD Number'] || 'FD74064';
+        const route = row['Route'] || row['route'] || row['Route Code'] || 'RT-' + (idx + 1);
+        const disp = parseInt(row['Stops'] || row['Dispatched Stops'] || row['stops'] || 0, 10);
+        const paid = parseInt(row['Paid Stops'] || row['paid_stops'] || row['paid'] || 0, 10);
+
+        // Calculate business formulas
+        let fail = null;
+        if (disp > 0) {
+          fail = Number((((disp - paid) / disp) * 100).toFixed(2));
+        }
+
+        let topUp = 0;
+        if (paid > 0 && paid < 100) {
+          topUp = 100 - paid;
+        }
+
+        const newShift = {
+          id: 's-imp-' + Date.now() + '-' + idx,
+          date: String(date).trim(),
+          driver: String(driverName).trim(),
+          code: 'IMP-' + (idx + 1),
+          depot: String(depot).trim(),
+          reg: String(reg).trim(),
+          fd: String(fd).trim(),
+          route: String(route).trim(),
+          disp: disp,
+          paid: paid,
+          fail: fail,
+          topUp: topUp,
+          cancelled: false,
+          portalMissing: paid === 0
+        };
+
+        shifts.unshift(newShift);
+        importedCount++;
+
+        // Auto-register driver if not exists
+        if (!drivers.some(d => d.name.toLowerCase() === newShift.driver.toLowerCase())) {
+          drivers.push({
+            id: 'd-auto-' + Date.now() + '-' + idx,
+            name: newShift.driver,
+            code: newShift.route,
+            depot: newShift.depot,
+            reg: newShift.reg,
+            rtw: 'Verified',
+            vat: false,
+            active: true
+          });
+        }
+      });
+
+      saveState();
+      populateDriverDropdowns();
+      renderReconTable();
+      renderDriversTable();
+      closeIngestModal();
+      showToast('File Ingestion Succeeded', 'Imported ' + importedCount + ' routes from ' + filename);
+    }
+
+    // =========================================================================
+    // DRIVERS CRUD
+    // =========================================================================
+    function openAddDriverModal() {
+      document.getElementById('driver-modal-title').innerText = 'Add New Courier Driver';
+      document.getElementById('driver-edit-id').value = '';
+      document.getElementById('driver-name-input').value = '';
+      document.getElementById('driver-code-input').value = '';
+      document.getElementById('driver-reg-input').value = '';
+      document.getElementById('driver-vat-input').checked = false;
+      document.getElementById('modal-driver').classList.remove('hidden');
+    }
+
+    function openEditDriverModal(id) {
+      const d = drivers.find(item => item.id === id);
+      if (!d) return;
+      document.getElementById('driver-modal-title').innerText = 'Edit Courier Driver';
+      document.getElementById('driver-edit-id').value = d.id;
+      document.getElementById('driver-name-input').value = d.name;
+      document.getElementById('driver-code-input').value = d.code;
+      document.getElementById('driver-depot-input').value = d.depot;
+      document.getElementById('driver-reg-input').value = d.reg;
+      document.getElementById('driver-rtw-input').value = d.rtw;
+      document.getElementById('driver-vat-input').checked = d.vat;
+      document.getElementById('modal-driver').classList.remove('hidden');
+    }
+
+    function closeDriverModal() { document.getElementById('modal-driver').classList.add('hidden'); }
+
+    function saveDriver(e) {
+      e.preventDefault();
+      const editId = document.getElementById('driver-edit-id').value;
+      const name = document.getElementById('driver-name-input').value.trim();
+      const code = document.getElementById('driver-code-input').value.trim() || 'DR-' + (drivers.length + 1);
+      const depot = document.getElementById('driver-depot-input').value;
+      const reg = document.getElementById('driver-reg-input').value.trim() || 'TBD';
+      const rtw = document.getElementById('driver-rtw-input').value;
+      const vat = document.getElementById('driver-vat-input').checked;
+
+      if (editId) {
+        const d = drivers.find(item => item.id === editId);
+        if (d) {
+          d.name = name;
+          d.code = code;
+          d.depot = depot;
+          d.reg = reg;
+          d.rtw = rtw;
+          d.vat = vat;
+        }
+        showToast('Driver Updated', name + ' details saved');
+      } else {
+        drivers.unshift({
+          id: 'd-' + Date.now(),
+          name, code, depot, reg, rtw, vat, active: true
+        });
+        showToast('Driver Registered', name + ' added to database');
+      }
+
+      saveState();
+      populateDriverDropdowns();
+      renderDriversTable();
+      closeDriverModal();
+    }
+
+    function deleteDriver(id) {
+      const d = drivers.find(item => item.id === id);
+      if (!d) return;
+      if (confirm('Permanently delete driver "' + d.name + '" from register?')) {
+        drivers = drivers.filter(item => item.id !== id);
+        saveState();
+        populateDriverDropdowns();
+        renderDriversTable();
+        showToast('Driver Purged', d.name + ' deleted from system');
+      }
+    }
+
+    function renderDriversTable() {
+      const tbody = document.getElementById('drivers-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      drivers.forEach(d => {
+        tbody.innerHTML += '<tr class="hover:bg-slate-800/40 transition">' +
+          '<td class="p-3.5 font-bold text-white">' +
+            '<span>' + d.name + '</span>' +
+            '<span class="text-[11px] text-slate-500 block font-mono">' + d.code + '</span>' +
+          '</td>' +
+          '<td class="p-3.5 text-slate-300">' + d.depot + '</td>' +
+          '<td class="p-3.5 font-mono text-slate-300">' + d.reg + '</td>' +
+          '<td class="p-3.5 text-slate-400 text-[11px]">Clean (0 pts)</td>' +
+          '<td class="p-3.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-400 border border-purple-500/30">' + d.rtw + '</span></td>' +
+          '<td class="p-3.5 text-center">' +
+            (d.vat ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">VAT (20%)</span>' : '<span class="text-slate-500 text-[10px]">No VAT</span>') +
+          '</td>' +
+          '<td class="p-3.5 text-center">' +
+            '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Active</span>' +
+          '</td>' +
+          '<td class="p-3.5 text-right">' +
+            '<div class="flex items-center justify-end gap-1.5">' +
+              '<button onclick="openEditDriverModal('' + d.id + '')" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer" title="Edit Driver"><i data-lucide="edit" class="w-3.5 h-3.5"></i></button>' +
+              '<button onclick="deleteDriver('' + d.id + '')" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 cursor-pointer" title="Delete Driver"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>' +
+            '</div>' +
+          '</td>' +
+        '</tr>';
+      });
+      lucide.createIcons();
+    }
+
+    // =========================================================================
+    // CHARGES & DEDUCTIONS CRUD
+    // =========================================================================
+    function openChargeModal() {
+      document.getElementById('charge-modal-title').innerText = 'Add Deduction / Management Credit';
+      document.getElementById('charge-edit-id').value = '';
+      document.getElementById('charge-amount-input').value = '';
+      document.getElementById('charge-notes-input').value = '';
+      document.getElementById('modal-charge').classList.remove('hidden');
+    }
+
+    function closeChargeModal() { document.getElementById('modal-charge').classList.add('hidden'); }
+
+    function saveCharge(e) {
+      e.preventDefault();
+      const drvName = document.getElementById('charge-driver-input').value;
+      const type = document.getElementById('charge-type-input').value;
+      let amt = parseFloat(document.getElementById('charge-amount-input').value) || 0;
+      if (type === 'Management Credit') amt = -Math.abs(amt);
+      const notes = document.getElementById('charge-notes-input').value || type;
+
+      charges.unshift({
+        id: 'c-' + Date.now(),
+        date: new Date().toISOString().split('T')[0],
+        driver: drvName,
+        code: 'DR-' + Math.floor(1000 + Math.random() * 9000),
+        type: type,
+        notes: notes,
+        amount: amt,
+        locked: false,
+        invNum: null
+      });
+
+      saveState();
+      renderChargesTable();
+      closeChargeModal();
+      showToast('Deduction Registered', 'Saved £' + amt + ' for ' + drvName);
+    }
+
+    function deleteCharge(id) {
+      if (confirm('Delete this deduction record?')) {
+        charges = charges.filter(item => item.id !== id);
+        saveState();
+        renderChargesTable();
+        showToast('Deduction Removed', 'Record purged from ledger');
+      }
+    }
+
+    function renderChargesTable() {
+      const tbody = document.getElementById('charges-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      charges.forEach(c => {
+        const isCredit = c.amount < 0;
+        tbody.innerHTML += '<tr class="hover:bg-slate-800/40 transition">' +
+          '<td class="p-3.5 text-slate-300 font-medium">' +
+            '<span class="font-bold text-white block">' + c.date + '</span>' +
+            '<span class="text-[10px] text-slate-400">August 2026</span>' +
+          '</td>' +
+          '<td class="p-3.5">' +
+            '<span class="font-bold text-white block">' + c.driver + '</span>' +
+            '<span class="text-[10px] text-slate-400">' + c.code + '</span>' +
+          '</td>' +
+          '<td class="p-3.5">' +
+            '<span class="px-2 py-0.5 rounded text-[10px] font-semibold border ' + (
+              isCredit ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+            ) + '">' + c.type + '</span>' +
+          '</td>' +
+          '<td class="p-3.5 text-slate-400 truncate max-w-xs">' + c.notes + '</td>' +
+          '<td class="p-3.5 text-right font-bold text-sm">' +
+            (isCredit ? '<span class="text-emerald-400 font-black">+ £' + Math.abs(c.amount).toFixed(2) + ' (Credit)</span>' : '<span class="text-rose-400 font-black">- £' + c.amount.toFixed(2) + '</span>') +
+          '</td>' +
+          '<td class="p-3.5 text-center">' +
+            (c.locked ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Locked (' + c.invNum + ')</span>' : '<span class="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 border border-slate-700 text-slate-300">Pending Next Invoice</span>') +
+          '</td>' +
+          '<td class="p-3.5 text-right">' +
+            '<div class="flex items-center justify-end gap-1.5">' +
+              (!c.locked ?
+                '<button onclick="deleteCharge('' + c.id + '')" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 cursor-pointer" title="Delete Charge"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>' :
+                '<span class="text-[10px] text-slate-500 font-medium inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-800 border border-slate-700">🔒 Locked</span>'
+              ) +
+            '</div>' +
+          '</td>' +
+        '</tr>';
+      });
+      lucide.createIcons();
+    }
+
+    // =========================================================================
+    // INVOICES STATE MACHINE
+    // =========================================================================
+    function renderInvoicesTable() {
+      const tbody = document.getElementById('invoices-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      invoices.forEach(inv => {
+        const isLocked = inv.status === 'Locked';
+        tbody.innerHTML += '<tr class="hover:bg-slate-800/40 transition">' +
+          '<td class="p-3.5 font-bold font-mono text-blue-400">' + inv.num + '</td>' +
+          '<td class="p-3.5 font-bold text-white">' + inv.driver + '</td>' +
+          '<td class="p-3.5 text-slate-400">' + inv.month + '</td>' +
+          '<td class="p-3.5 text-right font-mono text-slate-300"><strong>' + inv.days + '</strong> d / <strong>' + inv.stops + '</strong> st</td>' +
+          '<td class="p-3.5 text-right font-mono text-slate-300">£' + inv.gross.toFixed(2) + '</td>' +
+          '<td class="p-3.5 text-right font-mono text-rose-400">-£' + inv.ded.toFixed(2) + '</td>' +
+          '<td class="p-3.5 text-right font-mono text-sky-400">' + (inv.vat > 0 ? '+£' + inv.vat.toFixed(2) : '-') + '</td>' +
+          '<td class="p-3.5 text-right font-mono font-bold text-emerald-400 text-sm">£' + inv.net.toFixed(2) + '</td>' +
+          '<td class="p-3.5 text-center">' +
+            '<span class="px-2.5 py-0.5 rounded text-[10px] font-bold ' + (
+              isLocked ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' :
+              inv.status === 'Approved' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
+              inv.status === 'Checked' ? 'bg-sky-500/20 text-sky-400 border border-sky-500/30' :
+              'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+            ) + '">' + inv.status + '</span>' +
+          '</td>' +
+          '<td class="p-3.5 text-right">' +
+            '<div class="flex items-center justify-end gap-1.5">' +
+              '<select onchange="updateInvoiceStatus('' + inv.id + '', this.value)" class="bg-[#060913] border border-slate-700 text-slate-300 text-[11px] rounded px-2 py-1 focus:outline-none cursor-pointer">' +
+                '<option value="Draft" ' + (inv.status==='Draft'?'selected':'') + '>Draft</option>' +
+                '<option value="Checked" ' + (inv.status==='Checked'?'selected':'') + '>Checked</option>' +
+                '<option value="Approved" ' + (inv.status==='Approved'?'selected':'') + '>Approved</option>' +
+                '<option value="Locked" ' + (inv.status==='Locked'?'selected':'') + '>Locked 🔒</option>' +
+              '</select>' +
+            '</div>' +
+          '</td>' +
+        '</tr>';
+      });
+      lucide.createIcons();
+    }
+
+    function updateInvoiceStatus(id, newStatus) {
+      const inv = invoices.find(i => i.id === id);
+      if (inv) {
+        inv.status = newStatus;
+        saveState();
+        showToast('Lifecycle State Updated', inv.num + ' transitioned to ' + newStatus);
+        renderInvoicesTable();
+      }
+    }
+
+    // =========================================================================
+    // FLEET CRUD
+    // =========================================================================
+    function renderFleetTable() {
+      const tbody = document.getElementById('fleet-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      let filtered = fleet.filter(v => {
+        if (fleetScope === 'ACTIVE') return v.status !== 'Decommissioned';
+        if (fleetScope === 'DECOMMISSIONED') return v.status === 'Decommissioned';
+        return true;
+      });
+
+      filtered.forEach(v => {
+        tbody.innerHTML += '<tr class="hover:bg-slate-800/40 transition">' +
+          '<td class="p-3.5 font-mono font-bold text-white">' + v.reg + '</td>' +
+          '<td class="p-3.5 text-slate-300">' + v.model + '</td>' +
+          '<td class="p-3.5 font-mono text-slate-400">' + v.fd + '</td>' +
+          '<td class="p-3.5 text-slate-300">' + v.depot + '</td>' +
+          '<td class="p-3.5 font-bold text-slate-200">' + v.driver + '</td>' +
+          '<td class="p-3.5">' +
+            '<select onchange="updateVehicleStatus('' + v.id + '', this.value)" class="bg-[#060913] border border-slate-700 text-xs font-bold rounded-lg px-2.5 py-1 text-slate-200 focus:outline-none cursor-pointer">' +
+              '<option value="Available" ' + (v.status==='Available'?'selected':'') + '>🟢 Available</option>' +
+              '<option value="Deployed on Route" ' + (v.status==='Deployed on Route'?'selected':'') + '>🔵 Deployed on Route</option>' +
+              '<option value="Under Maintenance" ' + (v.status==='Under Maintenance'?'selected':'') + '>🟡 Under Maintenance</option>' +
+              '<option value="Breakdown" ' + (v.status==='Breakdown'?'selected':'') + '>🟠 Breakdown</option>' +
+              '<option value="Decommissioned" ' + (v.status==='Decommissioned'?'selected':'') + '>🛑 Decommissioned</option>' +
+            '</select>' +
+          '</td>' +
+          '<td class="p-3.5 text-right">' +
+            '<button onclick="deleteVan('' + v.id + '')" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 cursor-pointer" title="Delete Van"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>' +
+          '</td>' +
+        '</tr>';
+      });
+      lucide.createIcons();
+    }
+
+    function setFleetScope(scope) {
+      fleetScope = scope;
+      document.querySelectorAll('#fs-active, #fs-decom, #fs-all').forEach(b => {
+        b.className = "px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white cursor-pointer";
+      });
+      const activeBtn = document.getElementById('fs-' + (scope==='ACTIVE'?'active':scope==='DECOMMISSIONED'?'decom':'all'));
+      if (activeBtn) activeBtn.className = "px-3 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white shadow-sm cursor-pointer";
+      const restoreBtn = document.getElementById('restore-fleet-btn');
+      if (restoreBtn) restoreBtn.className = scope === 'DECOMMISSIONED' ? 'px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 border border-emerald-500/40 rounded-lg text-xs font-bold flex items-center gap-1.5 transition cursor-pointer' : 'hidden';
+      renderFleetTable();
+    }
+
+    function updateVehicleStatus(id, newStatus) {
+      const v = fleet.find(item => item.id === id);
+      if (v) {
+        v.status = newStatus;
+        saveState();
+        showToast('Van Status Updated', v.reg + ' changed to ' + newStatus);
+        renderFleetTable();
+      }
+    }
+
+    function restoreAllFleet() {
+      fleet.forEach(v => { if (v.status === 'Decommissioned') v.status = 'Available'; });
+      saveState();
+      showToast('Fleet Restored', 'All decommissioned vehicles returned to Active Fleet');
+      setFleetScope('ACTIVE');
+    }
+
+    function deleteVan(id) {
+      if (confirm('Delete this delivery van?')) {
+        fleet = fleet.filter(v => v.id !== id);
+        saveState();
+        renderFleetTable();
+        showToast('Van Removed', 'Vehicle record purged');
+      }
+    }
+
+    function openAddVanModal() {
+      const reg = prompt('Enter Vehicle Registration Number:');
+      if (reg) {
+        fleet.unshift({
+          id: 'v-' + Date.now(),
+          reg: reg.toUpperCase(),
+          model: 'Ford Transit 350',
+          fd: 'FD74064',
+          depot: 'Leicester',
+          driver: 'Unassigned',
+          status: 'Available'
+        });
+        saveState();
+        renderFleetTable();
+        showToast('Van Added', reg.toUpperCase() + ' added to inventory');
+      }
+    }
+
+    // Modal Control Helpers
+    function openIngestModal() { document.getElementById('modal-ingest').classList.remove('hidden'); }
+    function closeIngestModal() { document.getElementById('modal-ingest').classList.add('hidden'); }
+    function openAddShiftModal() {
+      document.getElementById('shift-date-input').value = new Date().toISOString().split('T')[0];
+      document.getElementById('modal-shift').classList.remove('hidden');
+    }
+    function closeShiftModal() { document.getElementById('modal-shift').classList.add('hidden'); }
+
+    function saveShift(e) {
+      e.preventDefault();
+      const date = document.getElementById('shift-date-input').value;
+      const driver = document.getElementById('shift-driver-input').value;
+      const route = document.getElementById('shift-route-input').value;
+      const fd = document.getElementById('shift-fd-input').value || 'FD74064';
+      const depot = document.getElementById('shift-depot-input').value;
+      const disp = parseInt(document.getElementById('shift-disp-input').value, 10);
+      const paid = parseInt(document.getElementById('shift-paid-input').value, 10);
+
+      let fail = disp > 0 ? Number((((disp - paid) / disp) * 100).toFixed(2)) : null;
+      let topUp = (paid > 0 && paid < 100) ? (100 - paid) : 0;
+
+      shifts.unshift({
+        id: 's-' + Date.now(),
+        date, driver, code: route, depot, reg: 'TBD', fd, route,
+        disp, paid, fail, topUp, cancelled: false, portalMissing: paid === 0
+      });
+
+      saveState();
+      renderReconTable();
+      closeShiftModal();
+      showToast('Route Recorded', 'Added shift for ' + driver);
+    }
+
+    function handleGlobalSearch() {
+      const q = document.getElementById('global-search').value.toLowerCase();
+      if (currentPage === 'reconciliation') {
+        document.getElementById('recon-search-box').value = q;
+        renderReconTable();
+      }
+    }
+
+    function handlePeriodChange() {
+      const p = document.getElementById('global-period-select').value;
+      showToast('Period Filter Applied', 'Displaying ' + p + ' data');
+    }
+
+    function showToast(title, msg) {
+      const banner = document.getElementById('toast-banner');
+      document.getElementById('toast-title').innerText = title;
+      document.getElementById('toast-msg').innerText = msg;
+      banner.classList.remove('hidden');
+      setTimeout(() => banner.classList.add('hidden'), 3500);
+      lucide.createIcons();
+    }
+
+    window.onload = init;
+  </script>
+</body>
 </html>
